@@ -91,3 +91,6 @@ async def open(exec_path: str, remote_port: int, proxy_port: int, user_data_dir:
         logger.info("chrome已启动，pid：%s", process.pid)
         return True
     return False
+if __name__ == '__main__':
+    asyncio.run(open("C:\Program Files\Google\Chrome\Application\chrome.exe", 9090, 9091, "./user"))
+    time.sleep(5)
