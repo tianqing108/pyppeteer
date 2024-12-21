@@ -11,6 +11,7 @@ from pyppeteer.page import Page
 logger = logging.getLogger(__name__)
 
 
+
 async def active_page(browser: Browser) -> Page | None:
     pages = await browser.pages()
     match = re.search(r":(\d+)/", browser._connection._url)
@@ -33,27 +34,27 @@ async def active_page(browser: Browser) -> Page | None:
 
 
 def is_browser_alive(wsurl):
-    # ʹ��������ʽ��ȡ�˿ں�
+    # 使用正则表达式提取端口号
     match = re.search(r":(\d+)/", wsurl)
     if match:
         port = match.group(1)
-        logger.info("��ȡ���Ķ˿ں�:%s", port)
+        logger.info("提取到的端口号:%s", port)
         return is_port_in_use(int(port))
     else:
-        logger.info("δ�ҵ��˿ں�")
+        logger.info("未找到端口号")
         return False
 
 
-# �Ƚ�host�Ƿ�һ��
+# 比较host是否一致
 def compare_host(url1, url2):
     parsed_url1 = urlparse(url1)
     parsed_url2 = urlparse(url2)
 
-    # ��ȡ��������
+    # 获取主机部分
     host1 = parsed_url1.hostname
     host2 = parsed_url2.hostname
 
-    # �Ƚ����������Ƿ���ͬ
+    # 比较主机部分是否相同
     if host1 == host2:
         return True
     else:
@@ -63,11 +64,11 @@ def compare_host(url1, url2):
 def is_port_in_use(port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         try:
-            s.settimeout(1)  # �������ӳ�ʱʱ��Ϊ1��
+            s.settimeout(1)  # 设置连接超时时间为1秒
             s.connect(("127.0.0.1", port))
-            return True  # �˿��ѱ�ռ��
+            return True  # 端口已被占用
         except (socket.timeout, ConnectionRefusedError):
-            return False  # �˿�δ��ռ��
+            return False  # 端口未被占用
 
 
 async def open(exec_path: str, remote_port: int, proxy_port: int, user_data_dir: str) -> str:
