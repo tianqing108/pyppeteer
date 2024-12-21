@@ -33,27 +33,27 @@ async def active_page(browser: Browser) -> Page | None:
 
 
 def is_browser_alive(wsurl):
-    # Ê¹ÓÃÕıÔò±í´ïÊ½ÌáÈ¡¶Ë¿ÚºÅ
+    # Ê¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê½ï¿½ï¿½È¡ï¿½Ë¿Úºï¿½
     match = re.search(r":(\d+)/", wsurl)
     if match:
         port = match.group(1)
-        logger.info("ÌáÈ¡µ½µÄ¶Ë¿ÚºÅ:%s", port)
+        logger.info("ï¿½ï¿½È¡ï¿½ï¿½ï¿½Ä¶Ë¿Úºï¿½:%s", port)
         return is_port_in_use(int(port))
     else:
-        logger.info("Î´ÕÒµ½¶Ë¿ÚºÅ")
+        logger.info("Î´ï¿½Òµï¿½ï¿½Ë¿Úºï¿½")
         return False
 
 
-# ±È½ÏhostÊÇ·ñÒ»ÖÂ
+# ï¿½È½ï¿½hostï¿½Ç·ï¿½Ò»ï¿½ï¿½
 def compare_host(url1, url2):
     parsed_url1 = urlparse(url1)
     parsed_url2 = urlparse(url2)
 
-    # »ñÈ¡Ö÷»ú²¿·Ö
+    # ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     host1 = parsed_url1.hostname
     host2 = parsed_url2.hostname
 
-    # ±È½ÏÖ÷»ú²¿·ÖÊÇ·ñÏàÍ¬
+    # ï¿½È½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½Í¬
     if host1 == host2:
         return True
     else:
@@ -63,8 +63,30 @@ def compare_host(url1, url2):
 def is_port_in_use(port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         try:
-            s.settimeout(1)  # ÉèÖÃÁ¬½Ó³¬Ê±Ê±¼äÎª1Ãë
+            s.settimeout(1)  # ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó³ï¿½Ê±Ê±ï¿½ï¿½Îª1ï¿½ï¿½
             s.connect(("127.0.0.1", port))
-            return True  # ¶Ë¿ÚÒÑ±»Õ¼ÓÃ
+            return True  # ï¿½Ë¿ï¿½ï¿½Ñ±ï¿½Õ¼ï¿½ï¿½
         except (socket.timeout, ConnectionRefusedError):
-            return False  # ¶Ë¿ÚÎ´±»Õ¼ÓÃ
+            return False  # ï¿½Ë¿ï¿½Î´ï¿½ï¿½Õ¼ï¿½ï¿½
+
+
+async def open(exec_path: str, remote_port: int, proxy_port: int, user_data_dir: str) -> str:
+    if is_port_in_use(remote_port):
+        logger.info("chromeå·²å¯åŠ¨ï¼Œè·³è¿‡")
+        return True
+    args = [
+        f"--remote-debugging-port={remote_port}",
+        f"--proxy-server=127.0.0.1:{proxy_port}",
+        f"--user-data-dir={user_data_dir}",
+        '--disable-background-networking', '--disable-background-timer-throttling', '--disable-breakpad',
+        '--disable-browser-side-navigation', '--disable-client-side-phishing-detection', '--disable-default-apps',
+        '--disable-dev-shm-usage', '--disable-extensions', '--disable-features=site-per-process',
+        '--disable-hang-monitor',
+        '--disable-popup-blocking', '--disable-prompt-on-repost', '--disable-sync', '--disable-translate',
+        '--metrics-recording-only', '--no-first-run', '--safebrowsing-disable-auto-update', '--password-store=basic','--use-mock-keychain'
+    ]
+    process = await asyncio.to_thread(subprocess.Popen, [exec_path] + args, creationflags=subprocess.DETACHED_PROCESS)
+    if process:
+        logger.info("chromeå·²å¯åŠ¨ï¼Œpidï¼š%s", process.pid)
+        return True
+    return False
