@@ -72,7 +72,9 @@ class Launcher(object):
         """Make new launcher."""
         options = merge_dict(options, kwargs)
 
-        self.port = get_free_port()
+
+        self.port = self.get_port(args)
+
         self.url = f'http://127.0.0.1:{self.port}'
         self._loop = options.get('loop', asyncio.get_event_loop())
         self.chromeClosed = True
@@ -122,6 +124,11 @@ class Launcher(object):
 
         self.cmd = [self.chromeExecutable] + self.chromeArguments
 
+    def get_port(self,args: List[str]):
+        for arg in args:
+            if arg.startswith("--remote-debugging-port"):
+                return arg.split("=")[1]
+        return get_free_port()
     def _cleanup_tmp_user_data_dir(self) -> None:
         for retry in range(100):
             if self.temporaryUserDataDir and os.path.exists(self.temporaryUserDataDir):

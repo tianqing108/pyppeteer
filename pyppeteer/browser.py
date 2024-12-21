@@ -8,12 +8,14 @@ from subprocess import Popen
 from types import SimpleNamespace
 from typing import Any, Awaitable, Callable, Dict, List, Optional
 
+import requests
 from pyee import EventEmitter
 
 from pyppeteer.connection import Connection
 from pyppeteer.errors import BrowserError
 from pyppeteer.page import Page
 from pyppeteer.target import Target
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -242,6 +244,27 @@ class Browser(EventEmitter):
             pages.extend(await context.pages())
         return pages
 
+    async def activePage(self) -> Page:
+        targets = self.targets()
+        pages = await self.pages()
+        match = re.search(r":(\d+)/", self._connection._url)
+        port = None
+        if match:
+            port = match.group(1)
+
+        else:
+            return None
+        browserUrl = f"http://127.0.0.1:{port}/json"
+        res = requests.get(browserUrl)
+        data = res.json()
+        if len(data) == 0:
+            return None
+        filtered_data = [item for item in data if item.get('type') == "page"]
+        if len(filtered_data) == 0:
+            return None
+        target_id = filtered_data[0]['id']
+        page = next((p for p in pages if p.target._targetId == target_id),None)
+        return page
     async def version(self) -> str:
         """Get version of the browser."""
         version = await self._getVersion()
