@@ -3,8 +3,8 @@ import re
 import socket
 from urllib.parse import urlparse
 
-import requests
-
+from urllib.request import urlopen
+import json
 from pyppeteer.browser import Browser
 from pyppeteer.page import Page
 
@@ -20,9 +20,12 @@ async def active_page(browser: Browser) -> Page | None:
         port = match.group(1)
     else:
         return None
+
     browserUrl = f"http://127.0.0.1:{port}/json"
-    res = requests.get(browserUrl)
-    data = res.json()
+    # 发送 GET 请求
+    response =  urlopen(browserUrl)
+    # 读取响应数据并解析 JSON
+    data = json.loads(response.read().decode('utf-8'))
     if len(data) == 0:
         return None
     filtered_data = [item for item in data if item.get('type') == "page"]
