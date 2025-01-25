@@ -59,9 +59,9 @@ async def active_page(browser: Browser) -> Page | None:
     return page
 
 
-def is_browser_alive(wsurl):
+def is_browser_alive(url):
     # 使用正则表达式提取端口号
-    match = re.search(r":(\d+)(/|$)", wsurl)  # 匹配端口号后跟斜杠或字符串结束
+    match = re.search(r":(\d+)(/|$)", url)  # 匹配端口号后跟斜杠或字符串结束
     if match:
         port = match.group(1)
         logger.info("提取到的端口号:%s", port)
