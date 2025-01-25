@@ -14,7 +14,6 @@ from zipfile import ZipFile
 import certifi
 import urllib3
 from pyppeteer import __chromium_revision__, __pyppeteer_home__
-from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 # add our own stream handler - we want some output here
@@ -30,10 +29,6 @@ DOWNLOAD_HOST = os.environ.get('PYPPETEER_DOWNLOAD_HOST', DEFAULT_DOWNLOAD_HOST)
 BASE_URL = f'{DOWNLOAD_HOST}/chromium-browser-snapshots'
 
 REVISION = os.environ.get('PYPPETEER_CHROMIUM_REVISION', __chromium_revision__)
-
-NO_PROGRESS_BAR = os.environ.get('PYPPETEER_NO_PROGRESS_BAR', '')
-if NO_PROGRESS_BAR.lower() in ('1', 'true'):
-    NO_PROGRESS_BAR = True  # type: ignore
 
 windowsArchive = 'chrome-win'
 
@@ -83,19 +78,8 @@ def download_zip(url: str) -> BytesIO:
 
         # 10 * 1024
         _data = BytesIO()
-        if NO_PROGRESS_BAR:
-            for chunk in r.stream(10240):
-                _data.write(chunk)
-        else:
-            try:
-                total_length = int(r.headers['content-length'])
-            except (KeyError, ValueError, AttributeError):
-                total_length = 0
-            process_bar = tqdm(total=total_length, unit_scale=True, unit='b')
-            for chunk in r.stream(10240):
-                _data.write(chunk)
-                process_bar.update(len(chunk))
-            process_bar.close()
+        for chunk in r.stream(10240):
+            _data.write(chunk)
 
     return _data
 
