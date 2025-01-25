@@ -25,7 +25,6 @@ from typing import Any, Dict, List, TYPE_CHECKING
 from pyppeteer import __pyppeteer_home__
 from pyppeteer.browser import Browser
 from pyppeteer.connection import Connection
-from pyppeteer.chromium_downloader import current_platform
 from pyppeteer.errors import BrowserError
 from pyppeteer.helper import addEventListener, debugError, removeEventListeners
 from pyppeteer.target import Target
