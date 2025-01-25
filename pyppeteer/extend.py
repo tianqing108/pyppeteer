@@ -14,6 +14,26 @@ from pyppeteer.page import Page
 logger = logging.getLogger(__name__)
 
 
+async def current_page(browser: Browser) -> Page:
+    pages = await browser.pages()
+    match = re.search(r":(\d+)/", browser._connection._url)
+    port = None
+    if match:
+        port = match.group(1)
+    else:
+        return None
+    browserUrl = f"http://127.0.0.1:{port}/json"
+    response =  urlopen(browserUrl)
+    data = json.loads(response.read().decode('utf-8'))
+    if len(data) == 0:
+        return None
+    filtered_data = [item for item in data if item.get('type') == "page"]
+    if len(filtered_data) == 0:
+        return None
+    target_id = filtered_data[0]['id']
+    page = next((p for p in pages if p.target._targetId == target_id), None)
+    return page
+
 
 async def active_page(browser: Browser) -> Page | None:
     pages = await browser.pages()
